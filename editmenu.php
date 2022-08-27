@@ -122,10 +122,9 @@
     </div>
   </div>
   </header>
-  <section id="menutable">
+  <section>
     <?php
-
-    $food_menu = array(
+$food_menu = array(
 
       'categories' => array(
         array(
@@ -203,9 +202,36 @@
 
     );
 
+    ?>
+      
+      <h1>something</h1>
+
+      <form>
+
+        <?php
+
+         $data = $food_menu['categories'][$_GET['cat']]['contents'][$_GET['id']];
+
+         // echo "<pre>";
+         // print_r($food_menu['categories'][$_GET['cat']]['contents'][$_GET['id']]);
+         // exit;
+         ?>
+          
+          <input type="text" name="tile" value="<?php echo $data['title']; ?>">
+          <input type="text" name="ingredient" value="<?php echo $data['ingredient']; ?>">
+          <input type="text" name="price" value="<?php echo $data['price']; ?>">
+          <input type="submit" value="Update">
+
+      </form>
+
+  </section>
+  <section id="menutable">
+    <?php
+
+    
 
 
-    foreach($food_menu['categories'] as $category ){
+    foreach($food_menu['categories'] as $cat_key => $category ){
 
     ?>
 
@@ -217,16 +243,22 @@
       
       <?php
 
-      foreach($category['contents'] as $dish):
+      foreach($category['contents'] as $key=> $dish):
+
+          $query_string = 'id='.$key.'&cat='.$cat_key;
+
 
         ?>
 
         <tr>
+          <td><?php echo $key+1; ?></td>
           <td><?php echo $dish['title']; ?></td>
           <td><?php echo $dish['ingredient']; ?></td>
           <td> &#36; <?php echo $dish['price'].'.00'; ?></td>
-          <td> <a href="editmenu.php">Edit</a></td>
+          <td> <a href="editmenu.php?<?php echo $query_string; ?>">Edit</a></td>
           <td> <a href="#">Delete</a></td>
+
+
 
         </tr>
 
