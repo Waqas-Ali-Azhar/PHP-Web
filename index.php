@@ -61,7 +61,7 @@
           array(
              'label' => 'slide1',
              'img_url' => 'images/1.jpg',
-             'caption' => 'Adventurer Cheesecake Brownie' 
+             'caption' => 'Adventurer Cheesecake Brownie', 
           ),
           array(
              'label' => 'slide2',
@@ -122,10 +122,16 @@
     </div>
   </div>
   </header>
-  <section id="menutable">
-    <?php
 
-    $food_menu = array(
+ 
+
+
+  <section id="menutable">
+
+     <?php
+
+
+$food_menu = array(
 
       'categories' => array(
         array(
@@ -203,9 +209,39 @@
 
     );
 
+   
+
+    ?>
+
+    <?php
 
 
-    foreach($food_menu['categories'] as $category ){
+    if(!empty($_POST)){
+
+    $title = $_POST['title'];
+    $desc = $_POST['ingredient'];
+    $price = $_POST['price'];
+    $id = $_POST['id'];
+    $cat = $_POST['cat'];
+
+  
+
+    $food_menu['categories'][$cat]['contents'][$id]['title'] = $title ;
+    $food_menu['categories'][$cat]['contents'][$id]['ingredient'] =   $desc;
+    $food_menu['categories'][$cat]['contents'][$id]['price'] =  $price ;
+
+}
+
+  if(!empty($_GET['del'])){
+    $food_menu['categories'][$_GET['cat']]['contents'][$_GET['id']]['delete'] = 1;
+      
+    }
+
+
+    
+
+
+    foreach($food_menu['categories'] as $cat_key => $category ){
 
     ?>
 
@@ -217,16 +253,25 @@
       
       <?php
 
-      foreach($category['contents'] as $dish):
+      foreach($category['contents'] as $key=> $dish):
+         if($dish['delete'] > 0)
+            continue;
+
+          $query_string = 'id='.$key.'&cat='.$cat_key;
+          $query_delete = 'id='.$key.'&cat='.$cat_key.'&del=1'; 
+
 
         ?>
 
         <tr>
+          <td><?php echo $key+1; ?></td>
           <td><?php echo $dish['title']; ?></td>
           <td><?php echo $dish['ingredient']; ?></td>
           <td> &#36; <?php echo $dish['price'].'.00'; ?></td>
-          <td> <a href="editmenu.php">Edit</a></td>
-          <td> <a href="#">Delete</a></td>
+          <td> <a href="index.php?<?php echo $query_string; ?>">Edit</a></td>
+          <td> <a href="index.php?<?php echo  $query_delete; ?>">Delete</a></td>
+
+
 
         </tr>
 
@@ -242,6 +287,20 @@
     
 
   </section>
+
+
+  <?php 
+
+
+  if(isset($_GET['id'])){
+    include_once 'editmenu.php';   
+  }
+
+
+
+  
+
+  ?>
   <section></section>
   <footer>
     
