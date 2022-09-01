@@ -1,3 +1,9 @@
+<?php
+
+   include_once('db.php');
+
+
+ ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -128,90 +134,7 @@
 
   <section id="menutable">
 
-     <?php
 
-
-$food_menu = array(
-
-      'categories' => array(
-        array(
-          'label' => 'Soups And Salads',
-          'slug' => 'soups_and_salads',
-          'contents' => array(
-            array(
-              'title' => 'That Salads',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Spinach Salads',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Grilled Romaine',
-              'price' => 30,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ), 
-          )
-        ),
-
-
-        array(
-          'label' => 'Vegan',
-          'slug' => 'vegan',
-          'contents' => array(
-            array(
-              'title' => 'Spinach & Ricotta',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Purle Basil Pesto',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Spagheti al Pomodoro',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ), 
-          )
-        ),
-
-
-
-
-        array(
-          'label' => 'Mains',
-          'slug' => 'mains',
-          'contents' => array(
-            array(
-              'title' => 'Beefsteak',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Steak with chips',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ),
-            array(
-              'title' => 'Checken with Spinach',
-              'price' => 10,
-              'ingredient' => 'Lorem Ipsum dummy text'
-            ), 
-          )
-        ),
-
-
-      )
-
-    );
-
-   
-
-    ?>
 
     <?php
 
@@ -222,68 +145,79 @@ $food_menu = array(
     $desc = $_POST['ingredient'];
     $price = $_POST['price'];
     $id = $_POST['id'];
-    $cat = $_POST['cat'];
+    
 
-  
 
-    $food_menu['categories'][$cat]['contents'][$id]['title'] = $title ;
-    $food_menu['categories'][$cat]['contents'][$id]['ingredient'] =   $desc;
-    $food_menu['categories'][$cat]['contents'][$id]['price'] =  $price ;
+    $sql = "update tbl_food_menu set title='".$title."', ingredients = '".$desc."', price ='".$price."'
+    where id=". $id;
+
+    $result = $conn->query($sql);;
+    if($result){
+      unset($_GET);
+      ?>
+      <script type="text/javascript">
+        alert('Your record is updated');
+      </script>
+      <?php
+    }
+    else{
+      ?>
+      <script type="text/javascript">
+        alert('Could not update');
+      </script>
+      <?php
+    }
+
+
+ header('Location: http://localhost/phpweb');
 
 }
 
   if(!empty($_GET['del'])){
     $food_menu['categories'][$_GET['cat']]['contents'][$_GET['id']]['delete'] = 1;
       
+  }
+
+
+
+
+
+  $sql = "SELECT c.id as cat_id, c.label, m.id as dish_id, m.title, m.ingredients, m.price from tbl_categories c INNER JOIN tbl_food_menu m ON c.id = m.category_id";
+  $result = $conn->query($sql);
+
+  $table = "<table>";
+  $tr = '<tr>
+  <th>Category ID</th>
+  <th>Category Name</th>
+  <th>Dish ID</th>
+  <th>Title</th>
+  <th>Ingredients</th>
+  <th>Price</th>
+  <th>Edit</th>
+  <th>Delete</th>
+  </tr>';
+  if($result->num_rows > 0){
+    while( $row = $result->fetch_assoc()){
+      $tr .= '<tr>
+      <td>'.$row['cat_id'].'</td>
+      <td>'.$row['label'].'</td>
+      <td>'.$row['dish_id'].'</td>
+      <td>'.$row['title'].'</td>
+      <td>'.$row['ingredients'].'</td>
+      <td>'.$row['price'].'</td>
+      <td><a href="index.php?dish='.$row['dish_id'].'&edit=1">Edit</a></td>
+      <td><a href="#">Delete</a></td>
+      </tr>';
     }
+  }
+  $table .= $tr.'</table>';
+
+  echo $table;
 
 
     
 
-
-    foreach($food_menu['categories'] as $cat_key => $category ){
-
-    ?>
-
-    <div class="category-title">
-      <h1><?php echo $category['label']; ?></h1>
-    </div>  
-
-    <table>
-      
-      <?php
-
-      foreach($category['contents'] as $key=> $dish):
-         if($dish['delete'] > 0)
-            continue;
-
-          $query_string = 'id='.$key.'&cat='.$cat_key;
-          $query_delete = 'id='.$key.'&cat='.$cat_key.'&del=1'; 
-
-
-        ?>
-
-        <tr>
-          <td><?php echo $key+1; ?></td>
-          <td><?php echo $dish['title']; ?></td>
-          <td><?php echo $dish['ingredient']; ?></td>
-          <td> &#36; <?php echo $dish['price'].'.00'; ?></td>
-          <td> <a href="index.php?<?php echo $query_string; ?>">Edit</a></td>
-          <td> <a href="index.php?<?php echo  $query_delete; ?>">Delete</a></td>
-
-
-
-        </tr>
-
-
-        <?php
-          endforeach; 
-      ?>
-
-    </table>
-    <?php  } ?>
-
-    
+   ?>
     
 
   </section>
@@ -291,8 +225,18 @@ $food_menu = array(
 
   <?php 
 
+  $row = '';
+  if(isset($_GET['edit'])){
+    $dish_id = $_GET['dish'];
+    $sql = "select * from tbl_food_menu where id=".$dish_id;
+    $result = $conn->query($sql);
 
-  if(isset($_GET['id'])){
+    if($result->num_rows >  0){
+      $row = $result->fetch_assoc();
+    }
+
+
+    
     include_once 'editmenu.php';   
   }
 
